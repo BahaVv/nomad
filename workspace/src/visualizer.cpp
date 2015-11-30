@@ -4,7 +4,7 @@
 // this by drawing a path directly to the goal every so often and seeing what happens.
 
 // CURRENT ISSUES:
-// -No ROS/Stage integration. This was large on its own, I didn't have time over the 6 days of work. I have an algorithm written for it on paper, and suspect it wouldn't take long,  but ran out of time to implement it.
+// -No ROS/Stage integration.
 // -The drawPartialLine() function sometimes (infrequently in my testing?) inverts and draws the wrong portions of the line. I'm unsure how/why.
 // This is not an issue with the RRT algorithm, which does grow the tree correctly, just the visualization -- you'll notice they all converge on the correct point. I suspect this has something
 // to do with a line colliding with more than one wall, and my infamiliarity with SDL meant I spent hours on this, but couldn't find the cause prior to submission.
