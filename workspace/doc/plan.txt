@@ -1,0 +1,13 @@
+The total plan of this assignment is to allow a physical robot to approximate a human's location via the MAC addresses and signal strengths of the access points around them, given that the robot has a map of the area and knows where each access point is located.
+
+This could likely be done without previously mapping the exact location of each access point, but that's outside of the scope of this project.
+
+We have been given a relevant research paper, as well as old Android code that accomplishes basic wireless localization that we should most definitely look into for determining goal points.
+
+The plan, for now, is to attempt to approximate 'best guesses' as to where the human might be, and to get the robot to that location. If the human is not there, we'll add it to a list of blacklisted points and move to the next possible goal. 
+
+I've written a basic RRTi-esque algorithm that should, theortetically, correctly provide a series of points that will get the robot from one point to another inside of a map [It needs some fixing and lots of comments, though]. These points can be converted to vectors with some basic geometry and sent out via twist commands. This will allow us to use a robot via stage to simulate a real-world environment.
+
+This means we will need to construct another small application to simulate access point signal strengths (likely just a series of circles around a predefined point, with some tiny amount of randomized noise), to feed the robot with information as it navigates. This will also let us just mark a spot as a person and reuse that same program.
+
+We could also just manually feed the above information to the algorithm as it runs.
