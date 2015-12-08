@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package>
+  <name>nomad</name>
+  <version>0.1.0</version>
+  <description>Nomad is a package simmulating indoor localization using wifi information</description>
+
+  <maintainer email="fultonms@clarkson.edu">Michael Fulton</maintainer>
+  <maintainer email="kimbac@clarkson.edu">Adam Kimball</maintainer>
+
+  <license>MIT</license>
+
+  <url type="website">http://github.com/elbaha/nomad</url>
+
+  <author email="fultonms@clarkson.edu">Michael Fulton</author>
+  <author email="kimbac@clarkson.edu">Adam Kimball</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp></build_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>std_msgs</run_depend>
+
+</package>

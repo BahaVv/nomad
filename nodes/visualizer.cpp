@@ -20,6 +20,8 @@
 #include <math.h>
 #include <unistd.h>
 #include <vector>
+#include <ros/ros.h>
+#include <geometry_msgs/Point.h>
 
 #define RAND_MAX 2147483647
 using namespace std;
@@ -53,8 +55,12 @@ vector< pair<int, int> > tryPoints;
 // Current position of robot
 pair<int, int> currcoord;
 
-int main()
+int main(int argc, char **argv)
 {
+        ros::init(argc, argv, "path_planner_node");
+        ros::NodeHandle n;
+        ros::Publisher p = n.advertize<geometry_msgs:Point>("nomad/points", 1000)
+
 	int startx, starty, goalx, goaly;
 	string filename;
 	srand(time(NULL));
@@ -168,6 +174,23 @@ int main()
 				currcoord.second = tryPoints[index].second;
 				// And add that coordinate to the vector of total path taken to end.
 				total.push_back(currcoord);
+
+                                //Now, make sure ROS is okay.
+                                if(! ros::ok())
+                                        exit(1)
+                        
+                                //Create the message to publish
+                                geometry_msgs::Point msg;
+                                msg.x = currcoord.first;
+                                msg.y= currcoord.second;
+                                msg.z = 0;
+
+                                //And sned it through.
+                                ROS_INFO("%S", msg.datac_str());
+                                p.publish(msg);
+                                ross::spinOnce();
+                                
+                        
 				// Break out of the loop, don't test outdated points
 				break;
 			}
