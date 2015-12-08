@@ -59,7 +59,7 @@ int main(int argc, char **argv)
 {
         ros::init(argc, argv, "path_planner_node");
         ros::NodeHandle n;
-        ros::Publisher p = n.advertize<geometry_msgs:Point>("nomad/points", 1000)
+        ros::Publisher p = n.advertise<geometry_msgs::Point>("nomad/points", 1000);
 
 	int startx, starty, goalx, goaly;
 	string filename;
@@ -177,7 +177,7 @@ int main(int argc, char **argv)
 
                                 //Now, make sure ROS is okay.
                                 if(! ros::ok())
-                                        exit(1)
+                                        exit(1);
                         
                                 //Create the message to publish
                                 geometry_msgs::Point msg;
@@ -186,9 +186,8 @@ int main(int argc, char **argv)
                                 msg.z = 0;
 
                                 //And sned it through.
-                                ROS_INFO("%S", msg.datac_str());
                                 p.publish(msg);
-                                ross::spinOnce();
+                                ros::spinOnce();
                                 
                         
 				// Break out of the loop, don't test outdated points
