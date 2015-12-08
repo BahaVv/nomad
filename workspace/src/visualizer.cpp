@@ -32,7 +32,7 @@ const int SCREEN_HEIGHT = 480;
 SDL_Surface* gScreenSurface = NULL;
 SDL_Window* gWindow = NULL;
 
-// Forward declaration
+// Forward declaration for functions
 bool sdlInit(string filename);
 bool sdlEnd();
 void putPixel(int startx, int starty, Uint32 pixel);
@@ -44,9 +44,13 @@ void drawPartialLine();
 bool loadSurface(string filePath);
 bool checkLine();
 
+// Output of bhm line -- unverified considered points along line from one point to next
 vector< pair<int, int> > current;
+// Series of accepted points for traversal thus far
 vector< pair<int, int> > total;
+// Current set of points to try out to maybe get closer to goal
 vector< pair<int, int> > tryPoints;
+// Current position of robot
 pair<int, int> currcoord;
 
 int main()
@@ -112,13 +116,14 @@ int main()
 		for (int i = 0; i < 5; i++)
 		{
 			pair <int, int> tmp;
-			x = rand() % SCREEN_WIDTH;
-			y = rand() % SCREEN_HEIGHT;
+			// constrain to moving 8% of screen space at any point in time
+			x = rand() % (SCREEN_WIDTH/12);
+			y = rand() % (SCREEN_HEIGHT/12);
 
 			while (x == currcoord.first && y == currcoord.second)
-			{
-				x = rand() % SCREEN_WIDTH;
-				y = rand() % SCREEN_HEIGHT;
+			{ 
+				x = rand() % (SCREEN_WIDTH/12);
+				y = rand() % (SCREEN_HEIGHT/12);
 			}
 
 			tmp.first = x;
