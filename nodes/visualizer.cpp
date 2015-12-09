@@ -1,15 +1,3 @@
-// Note: Only one tree required, and no graph search required.
-// e.g., efficiency isn't important here, only the requirement that
-// the path to the goal will actually happen, eventually. We can assure
-// this by drawing a path directly to the goal every so often and seeing what happens.
-
-// CURRENT ISSUES:
-// -No ROS/Stage integration.
-// -The drawPartialLine() function sometimes (infrequently in my testing?) inverts and draws the wrong portions of the line. I'm unsure how/why.
-// This is not an issue with the RRT algorithm, which does grow the tree correctly, just the visualization -- you'll notice they all converge on the correct point. I suspect this has something
-// to do with a line colliding with more than one wall, and my infamiliarity with SDL meant I spent hours on this, but couldn't find the cause prior to submission.
-// -The first line of a run draws much faster than the other 5, since it's just an attempted straight shot to the goal -- this isn't a glitch, it just updates instantly, by comparison to the others. 
-
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <iostream>
@@ -18,7 +6,6 @@
 #include <string>
 #include <stdlib.h>
 #include <math.h>
-#include <cmath>
 #include <unistd.h>
 #include <vector>
 #include <ros/ros.h>
@@ -26,6 +13,23 @@
 
 #define RAND_MAX 2147483647
 using namespace std;
+
+//Struct used to represent the various wireless points
+struct Circle {
+	pair<int, int> pos;
+	int radius;
+};
+
+struct User {
+	// User position
+	pair<int, int> pos;
+	// All circles the user is close to (index into vector)
+	vector<int> circles;
+	// All corresponding original strengths for the above
+	vector<float> orig_strengths;
+	// All corresponding current strengths for the above
+	vector<float> curr_strengths;
+} user;
 
 //Screen dimensions
 const int SCREEN_WIDTH = 640;
@@ -46,6 +50,8 @@ void drawLine();
 void drawPartialLine();
 bool loadSurface(string filePath);
 bool checkLine();
+int distance(int x1, int y1, int x2, int y2);
+
 
 // Output of bhm line -- unverified considered points along line from one point to next
 vector< pair<int, int> > current;
@@ -55,6 +61,10 @@ vector< pair<int, int> > total;
 vector< pair<int, int> > tryPoints;
 // Current position of robot
 pair<int, int> currcoord;
+// number of access points
+int numAP;
+// vector of all access points
+vector <struct Circle> circles;
 
 int main(int argc, char **argv)
 {
@@ -65,9 +75,9 @@ int main(int argc, char **argv)
 	int startx, starty, goalx, goaly;
 	string filename;
 	srand(time(NULL));
-	cout << "What pixel (x y) should represent the start location?" << endl;
+	cout << "What pixel (x y) should represent the robot location?" << endl;
 	cin >> startx >> starty;
-	cout << "What pixel (x y) should represent the finish location?" << endl;
+	cout << "What pixel (x y) should represent the user location?" << endl;
 	cin >> goalx >> goaly;
 	cout << "Okay! What is the file path of the map you want to use?" << endl;
 	cin >> filename;
@@ -84,7 +94,42 @@ int main(int argc, char **argv)
 	// Mark finish pixel on image
 	putPixel(goalx, goaly, blue);
 	SDL_UpdateWindowSurface(gWindow);
-	cout << "...and " << goalx << ", " << goaly << " has been marked as the robot's intended destination!" << endl;
+	cout << "...and " << goalx << ", " << goaly << " has been marked as the user's location!" << endl;
+	cout << "How many access points do you want to have?" << endl;
+	cin >> numAP;
+	cout << "Alright. For each point, give me a point (x y) radius pair, of format (x y r)." << endl;
+	for (int i = 0; i < numAP; i++){
+		struct Circle newCircle;
+		cin >> newCircle.pos.first >> newCircle.pos.second >> newCircle.radius;
+		circles.push_back(newCircle);
+	} 
+
+	cout << "Performing user-access point location calculations..." << endl;
+
+	for (int i = 0; i < numAP; i++){
+		int tmpDist;
+		// Build list of circles user is close to
+		// Take distance between current circle's midpoint and user's point.
+		tmpDist = distance(circles[i].pos.first, circles[i].pos.second, user.pos.first, user.pos.second);
+		if (tmpDist < circles[i].radius){
+			user.circles.push_back(i);
+			// Calculate percentage from midpt of those circles (decimal)
+			user.orig_strengths.push_back((tmpDist/circles[i].radius));
+		}
+
+		
+	}
+
+	cout << "Adding wireless noise variance..." << endl;
+
+	for (int i = 0; i < numAP; i++){
+		// +- 5% for each AP
+		int sign = (((rand() % 2)*2)-1);
+		int noise = rand() % 5;
+		noise = noise * sign;
+		user.curr_strengths.push_back((user.orig_strengths[i] + noise)); 
+	}
+	
 	cout << "Simulating..." << endl;
 
 	// main event loop starts here!
@@ -92,6 +137,10 @@ int main(int argc, char **argv)
 	// Set current coordinate to starting position
 	currcoord.first = startx;
 	currcoord.second = starty;
+
+	user.pos.first = goalx;
+	user.pos.second = goaly;
+
 	// Create placeholders for random x/y, an internal index, and distances
 	int x, y, index, d1, d2;
 
@@ -123,18 +172,21 @@ int main(int argc, char **argv)
 		for (int i = 0; i < 5; i++)
 		{
 			pair <int, int> tmp;
+			int xoffset;
+			int yoffset;
+			int sign = (rand() % 2) - 1;
 			// constrain to moving 8% of screen space at any point in time
-			x = rand() % (SCREEN_WIDTH/12);
-			y = rand() % (SCREEN_HEIGHT/12);
+			xoffset = (rand() % (SCREEN_WIDTH/12)) * sign;
+			yoffset = (rand() % (SCREEN_HEIGHT/12)) * sign;
 
-			while (x == currcoord.first && y == currcoord.second)
+			while (currcoord.first + xoffset > SCREEN_WIDTH || currcoord.second + yoffset > SCREEN_HEIGHT || currcoord.first + xoffset < 0 || currcoord.first + yoffset < 0)
 			{ 
-				x = rand() % (SCREEN_WIDTH/12);
-				y = rand() % (SCREEN_HEIGHT/12);
+				xoffset = (rand() % (SCREEN_WIDTH/12)) * sign;
+				yoffset = (rand() % (SCREEN_HEIGHT/12)) * sign;
 			}
 
-			tmp.first = x;
-			tmp.second = y;
+			tmp.first = xoffset + currcoord.first;
+			tmp.second = yoffset + currcoord.second;
 
 			tryPoints.push_back(tmp);
 		}
@@ -197,7 +249,7 @@ int main(int argc, char **argv)
 			}
 			cout << "Back to the beginning of for loop. current: " << currcoord.first << ", " << currcoord.second << ". index: " << index << " Current size: " << current.size() << endl;
 			// We couldn't draw a line to the point. Draw green line up to black pixels.
-			drawPartialLine();
+			//drawPartialLine();
 			// Remove current index from vector
 			tryPoints.erase(tryPoints.begin() + index);
 			current.clear();
@@ -220,6 +272,17 @@ int main(int argc, char **argv)
 	sdlEnd();
 
 	return 0;
+}
+
+// Distance between two points
+int distance(int x1, int y1, int x2, int y2){
+	int diffx, diffy, dist;
+	diffx = abs(x1 - x2);
+	diffx = diffx * diffx;
+	diffy = abs(y1 - y2);
+	diffy = diffy * diffy;
+	dist = diffx + diffy;
+	return sqrt(dist);
 }
 
 bool sdlInit(string filename){
