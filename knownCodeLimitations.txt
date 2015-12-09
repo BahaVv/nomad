@@ -4,7 +4,7 @@ Algorithm does not presently jump to second case described in paper -- that is,
 the algorithm presently gives up after not finding the user in the first access
 point.
 
-Algorithm currently halts after reaching intended access point. The proper math for following the circle to check the user is this:
+Algorithm currently halts after reaching intended access point. The proper math for following the ring to check the user is this:
 
 robot @ point (x,y)
 midpt @ (a,b)
@@ -23,6 +23,11 @@ Y' = rsin0'
 
 robot.x = X'+a
 robot.y = Y'+b 
+
+There were issues getting this math to translate to C properly, which is why it isn't present. 
+
+
+-----
 
 
 The points2Actions node sends actions composed of the goal points passed to it by the 

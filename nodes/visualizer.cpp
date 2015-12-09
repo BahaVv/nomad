@@ -289,6 +289,18 @@ int main(int argc, char **argv)
 		d2 = 0;
 	}
 
+	for (int i = 0; i < user.circles.size(); i++){
+		if (distance(goalx, goaly, user.pos.first, user.pos.second) < circles[user.circles[i]].radius)
+		{
+			cout << "Found user!" << endl;
+			exit(0);
+		}
+		else
+		{
+			cout << "User not at circle " << user.circles[i] << "!" << endl;
+		}
+	}
+
 	usleep(900000);
 
 	sdlEnd();
