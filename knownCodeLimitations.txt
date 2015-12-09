@@ -1,0 +1,12 @@
+VISUALIZER STUFF GOES HERE.
+
+
+The points2Actions node sends actions composed of the goal points passed to it by the 
+visualizer to the move_base node.  This is not fully correct, there are still issues with
+the costmap, the reference frame, and other things.  You should expect to see the first goal sent, 
+but no other goals, because the points2Actions node will not receive a proper response.  Move_base should be 
+logging the first goal sent to it, and getting confused about what to do.  
+
+The disconnect here, I believe is mostly time.  We did not shift focus to simmulation early 
+enough at all, which put us into a massive time crush, leaving insufficient time to deal with 
+all of the issues and learn all of the information about stage simmulation.

@@ -16,7 +16,7 @@ def callback(msg):
         
         rospy.loginfo("Recieved %f, %f", msg.x, msg.y)
 
-        goal.target_pose.header.frame_id = "base_link"
+        goal.target_pose.header.frame_id = "map"
         goal.target_pose.header.stamp = rospy.Time.now()
         goal.target_pose.pose.position.x = 1.0
         goal.target_pose.pose.position.y = 0

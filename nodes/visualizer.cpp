@@ -18,6 +18,7 @@
 #include <string>
 #include <stdlib.h>
 #include <math.h>
+#include <cmath>
 #include <unistd.h>
 #include <vector>
 #include <ros/ros.h>
