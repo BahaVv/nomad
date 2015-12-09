@@ -51,6 +51,7 @@ void drawPartialLine();
 bool loadSurface(string filePath);
 bool checkLine();
 int distance(int x1, int y1, int x2, int y2);
+void draw_circle(SDL_Surface *surface, int n_cx, int n_cy, int radius, Uint32 pixel);
 
 
 // Output of bhm line -- unverified considered points along line from one point to next
@@ -87,6 +88,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 	Uint32 blue = SDL_MapRGB(gScreenSurface->format, 0, 0, 255);
+	Uint32 red = SDL_MapRGB(gScreenSurface->format, 255, 0, 0);
 	// Mark start pixel on image
 	putPixel(startx, starty, blue); 
 	SDL_UpdateWindowSurface(gWindow);
@@ -101,6 +103,7 @@ int main(int argc, char **argv)
 	for (int i = 0; i < numAP; i++){
 		struct Circle newCircle;
 		cin >> newCircle.pos.first >> newCircle.pos.second >> newCircle.radius;
+		putPixel(newCircle.pos.first, newCircle.pos.second, red);
 		circles.push_back(newCircle);
 	} 
 
@@ -116,8 +119,6 @@ int main(int argc, char **argv)
 			// Calculate percentage from midpt of those circles (decimal)
 			user.orig_strengths.push_back((tmpDist/circles[i].radius));
 		}
-
-		
 	}
 
 	cout << "Adding wireless noise variance..." << endl;
@@ -129,6 +130,15 @@ int main(int argc, char **argv)
 		noise = noise * sign;
 		user.curr_strengths.push_back((user.orig_strengths[i] + noise)); 
 	}
+
+	cout << "Drawing circles..." << endl;
+
+	for (int i = 0; i < numAP; i++){
+		draw_circle(gScreenSurface, circles[i].pos.first, circles[i].pos.second, circles[i].radius, red);
+		draw_circle(gScreenSurface, circles[i].pos.first, circles[i].pos.second, (circles[i].radius * user.curr_strengths[i]), red); 
+	}
+
+	SDL_UpdateWindowSurface(gWindow);
 	
 	cout << "Simulating..." << endl;
 
@@ -140,6 +150,18 @@ int main(int argc, char **argv)
 
 	user.pos.first = goalx;
 	user.pos.second = goaly;
+
+	float tmpn = 0;
+	int idx;
+
+	for (int i = 0; i < user.circles.size(); i++){
+		idx = user.circles[i];
+		if (user.curr_strengths[i] > tmpn){
+			tmpn = user.curr_strengths[i];
+			goalx = circles[idx].pos.first;
+			goaly = circles[idx].pos.second;
+		}  
+	}
 
 	// Create placeholders for random x/y, an internal index, and distances
 	int x, y, index, d1, d2;
@@ -568,4 +590,52 @@ void bhm_line(int x1,int y1,int x2,int y2)
 		   current.push_back(xy);
    		   }
 	 }
+}
+
+void draw_circle(SDL_Surface *surface, int n_cx, int n_cy, int radius, Uint32 pixel)
+{
+    // if the first pixel in the screen is represented by (0,0) (which is in sdl)
+    // remember that the beginning of the circle is not in the middle of the pixel
+    // but to the left-top from it:
+ 
+    double error = (double)-radius;
+    double x = (double)radius -0.5;
+    double y = (double)0.5;
+    double cx = n_cx - 0.5;
+    double cy = n_cy - 0.5;
+ 
+    while (x >= y)
+    {
+        putPixel((int)(cx + x), (int)(cy + y), pixel);
+        putPixel((int)(cx + y), (int)(cy + x), pixel);
+ 
+        if (x != 0)
+        {
+            putPixel((int)(cx - x), (int)(cy + y), pixel);
+            putPixel((int)(cx + y), (int)(cy - x), pixel);
+        }
+ 
+        if (y != 0)
+        {
+            putPixel((int)(cx + x), (int)(cy - y), pixel);
+            putPixel((int)(cx - y), (int)(cy + x), pixel);
+        }
+ 
+        if (x != 0 && y != 0)
+        {
+            putPixel((int)(cx - x), (int)(cy - y), pixel);
+            putPixel((int)(cx - y), (int)(cy - x), pixel);
+        }
+ 
+        error += y;
+        ++y;
+        error += y;
+ 
+        if (error >= 0)
+        {
+            --x;
+            error -= x;
+            error -= x;
+        }
+    }
 }

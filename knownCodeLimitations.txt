@@ -1,4 +1,28 @@
-VISUALIZER STUFF GOES HERE.
+Predicted rings do not visually update.
+
+Algorithm does not presently jump to second case described in paper -- that is,
+the algorithm presently gives up after not finding the user in the first access
+point.
+
+Algorithm currently halts after reaching intended access point. The proper math for following the circle to check the user is this:
+
+robot @ point (x,y)
+midpt @ (a,b)
+
+X = x-a
+Y = y-b
+
+r = sqrt(X^2+Y^2)
+0 = atan2(Y,X)
+01 = asin(1px/r)
+
+0' = 0 + 01
+
+X' = rcos0'
+Y' = rsin0'
+
+robot.x = X'+a
+robot.y = Y'+b 
 
 
 The points2Actions node sends actions composed of the goal points passed to it by the 
