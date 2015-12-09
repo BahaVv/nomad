@@ -187,6 +187,7 @@ int main(int argc, char **argv)
 
                                 //And sned it through.
                                 p.publish(msg);
+                                ROS_INFO("%f, %f", msg.x, msg.y);
                                 ros::spinOnce();
                                 
                         
