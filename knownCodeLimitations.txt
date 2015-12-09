@@ -9,4 +9,4 @@ logging the first goal sent to it, and getting confused about what to do.
 
 The disconnect here, I believe is mostly time.  We did not shift focus to simmulation early 
 enough at all, which put us into a massive time crush, leaving insufficient time to deal with 
-all of the issues and learn all of the information about stage simmulation.
+all of the issues and learn all of the information about stage simulation.
